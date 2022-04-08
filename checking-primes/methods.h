@@ -159,6 +159,88 @@ long parallelLoadBalancingSolution(long setSize) {
 	return noPrimes;
 }
 
+// Parallel solution with a mutex and an optimized load balancing
+long parallelOptimizedLoadBalancingSolution(long setSize) {
+	long noPrimes = 0;
+	int noThreads = omp_get_num_procs();
+	mutex mutex;
+	vector<thread> threads;
+	long intervalSize = setSize / noThreads;
+
+	// Here we exclude the even values - they cannot be prime.
+	long startingValue = 1;
+
+	for (int i = 0; i < noThreads; ++i) {
+		threads.push_back((thread(syncCountPrimesWithGivenStep, startingValue, setSize, noThreads * 2, ref(noPrimes), ref(mutex))));
+		startingValue += 2;
+	}
+	for (int i = 0; i < noThreads; ++i) {
+		threads[i].join();
+	}
+
+	// Add 0, 1 and 2, because we start counting at 1.
+	noPrimes += 3;
+
+	return noPrimes;
+}
+
+// Parallel solution with a mutex and an optimized load balancing
+void countPrimesWithGivenStep(long lowerLimit, long upperLimit, long stepSize, long& result) {
+	double tStart = omp_get_wtime();
+
+	for (long i = lowerLimit; i < upperLimit; i += stepSize) {
+		bool isPrime = true;
+		for (long j = 2; j < i / 2; ++j) {
+			if (i % j == 0) {
+				isPrime = false;
+				break;
+			}
+		}
+		if (isPrime) {
+			result += 1;
+		}
+	}
+
+	double tFinal = omp_get_wtime();
+	printf("	>> Thread duration = %f seconds \n", tFinal - tStart);
+}
+
+// Parallel solution with omp
+
+
+long parallelOptimizedLoadBalancingSolutionWithoutMutex(long setSize) {
+	long noPrimes = 0;
+	int noThreads = omp_get_num_procs();
+	vector<thread> threads;
+	long intervalSize = setSize / noThreads;
+
+	long** results = new long* [noThreads];
+	for (int i = 0; i < noThreads; i++) {
+		results[i] = new long[1];
+		results[i][0] = 0;
+	}
+
+	// Here we exclude the even values - they cannot be prime.
+	long startingValue = 1;
+
+	for (int i = 0; i < noThreads; ++i) {
+		threads.push_back((thread(countPrimesWithGivenStep, startingValue, setSize, noThreads * 2, ref(results[i][0]))));
+		startingValue += 2;
+	}
+	
+	for (int i = 0; i < noThreads; ++i) {
+		threads[i].join();
+	}
+
+	for (int i = 0; i < noThreads; ++i) {
+		noPrimes += results[i][0];
+	}
+
+	// Add 0, 1 and 2, because we start counting at 1.
+	noPrimes += 3;
+
+	return noPrimes;
+}
 
 void benchmark(string description,
 	long setSize,
