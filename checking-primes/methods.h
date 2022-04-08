@@ -242,6 +242,33 @@ long parallelOptimizedLoadBalancingSolutionWithoutMutex(long setSize) {
 	return noPrimes;
 }
 
+// Parallel solution with omp.
+void ompCountPrimes(long lowerLimit, long upperLimit, long& result) {
+	
+	long localResult = 0;
+#pragma omp parallel for reduction(+: localResult) schedule(dynamic)
+	for (long i = lowerLimit; i < upperLimit; ++i) {
+		bool isPrime = true;
+		for (long j = 2; j < i / 2; ++j) {
+			if (i % j == 0) {
+				isPrime = false;
+				break;
+			}
+		}
+		if (isPrime) {
+			localResult += 1;
+		}
+	}
+
+	result = localResult;
+}
+
+long ompParallelSolution(long setSize) {
+	long result = 0;
+	ompCountPrimes(1, setSize, result);
+	return result;
+}
+
 void benchmark(string description,
 	long setSize,
 	long (*functionPointer)(long)) {

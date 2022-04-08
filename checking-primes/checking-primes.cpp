@@ -18,4 +18,5 @@ void main() {
 	benchmark("Parallel solution with a mutex and a better load balancing", N, parallelLoadBalancingSolution);
 	benchmark("Parallel solution with a mutex and an optimized load balancing", N, parallelOptimizedLoadBalancingSolution);
 	benchmark("Parallel solution without a mutex and an optimized load balancing", N, parallelOptimizedLoadBalancingSolutionWithoutMutex);
+	benchmark("Parallel solution with omp.", N, ompParallelSolution);
 }
