@@ -1,7 +1,7 @@
 
 ### Settings:
 1. Open Solution Explorer
-2. Right-Click on "omp-directives" (2nd level)
+2. Right-Click on project name. (2nd level)
 3. Configuration Properties -> C/C++ -> All Options
 4. Search for "Open MP Support"
 5. Click on the arrow and select "Yes (/openmp)"
